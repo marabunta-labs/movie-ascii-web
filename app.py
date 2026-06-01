@@ -153,9 +153,19 @@ def download_youtube(url, output_dir, video_id):
     out_path = os.path.join(output_dir, f"{video_id}.mp4")
     try:
         result = subprocess.run(
-            ["yt-dlp", "-f", "best[height<=720][ext=mp4]/best[ext=mp4]/best",
-             "--no-playlist", "--merge-output-format", "mp4",
-             "-o", out_path, url],
+            [
+                "yt-dlp", "-v",
+                "--remote-components",
+                "ejs:github",
+                "--js-runtimes", "node",
+                # "--extractor-args",
+                # "youtube:player_client=android",
+                "-f", "best[height<=720][ext=mp4]/best[ext=mp4]/best",
+                "--no-playlist", 
+                "--merge-output-format", "mp4",
+                "-o", out_path, 
+                url
+            ],
             check=True, capture_output=True, timeout=300,
         )
         if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
@@ -163,11 +173,10 @@ def download_youtube(url, output_dir, video_id):
     except subprocess.CalledProcessError as e:
         error_msg = e.stderr.decode('utf-8', errors='ignore')
         print(f"YT-DLP ERROR: {error_msg}")
-
-        st.error(f"Error interno de YouTube: {error_msg[:200]}...")
+        st.error(f"YouTube error: {error_msg}") 
     except Exception as e:
         print(f"GENERAL ERROR: {str(e)}")
-
+        
     return None
 
 def build_ascii_player(video_data_url, cols, mode_name, charset_str):
