@@ -152,7 +152,7 @@ def download_youtube(url, output_dir, video_id):
     """Download YouTube video with yt-dlp as mp4."""
     out_path = os.path.join(output_dir, f"{video_id}.mp4")
     try:
-        subprocess.run(
+        result = subprocess.run(
             ["yt-dlp", "-f", "best[height<=720][ext=mp4]/best[ext=mp4]/best",
              "--no-playlist", "--merge-output-format", "mp4",
              "-o", out_path, url],
@@ -160,10 +160,15 @@ def download_youtube(url, output_dir, video_id):
         )
         if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
             return out_path
-    except Exception:
-        pass
-    return None
+    except subprocess.CalledProcessError as e:
+        error_msg = e.stderr.decode('utf-8', errors='ignore')
+        print(f"YT-DLP ERROR: {error_msg}")
 
+        st.error(f"Error interno de YouTube: {error_msg[:200]}...")
+    except Exception as e:
+        print(f"GENERAL ERROR: {str(e)}")
+
+    return None
 
 def build_ascii_player(video_data_url, cols, mode_name, charset_str):
     """Build the real-time ASCII video player.
